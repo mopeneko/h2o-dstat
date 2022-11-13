@@ -12,6 +12,7 @@ func main() {
 	controllers.InitRouter(e)
 
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	e.Logger.Fatal(e.Start(":3000"))
 }
