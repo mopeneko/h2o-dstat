@@ -5,19 +5,35 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mopeneko/h2o-dstat/backend/model"
-	"github.com/mopeneko/h2o-dstat/backend/pkg/echoutils"
 	"golang.org/x/xerrors"
 )
 
-func GetStatus(c echo.Context) error {
+var (
+	connections = 0
+)
+
+func init() {
+	go func() {
+		t := time.NewTicker(time.Second)
+		for {
+			select {
+			case <-t.C:
+				getter()
+			}
+		}
+	}()
+}
+
+func getter() {
 	statusResp, err := http.Get("http://localhost/server-status/json")
 	if err != nil {
 		err = xerrors.Errorf("failed to get: %w", err)
 		log.Printf("%+v", err)
-		return echoutils.ReturnInternalServerError(c)
+		return
 	}
 
 	defer statusResp.Body.Close()
@@ -26,7 +42,7 @@ func GetStatus(c echo.Context) error {
 	if err != nil {
 		err = xerrors.Errorf("failed to read response body: %w", err)
 		log.Printf("%+v", err)
-		return echoutils.ReturnInternalServerError(c)
+		return
 	}
 
 	status := new(model.ServerStatus)
@@ -34,11 +50,15 @@ func GetStatus(c echo.Context) error {
 	if err != nil {
 		err = xerrors.Errorf("failed to unmarshal json: %w", err)
 		log.Printf("%+v", err)
-		return echoutils.ReturnInternalServerError(c)
+		return
 	}
 
+	connections = status.Connections
+}
+
+func GetStatus(c echo.Context) error {
 	res := &model.GetStatusResponse{
-		Connections: status.Connections,
+		Connections: connections,
 	}
 	return c.JSON(http.StatusOK, res)
 }
