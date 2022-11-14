@@ -42,15 +42,17 @@
 
       const chart = Highcharts.chart("container", options);
 
-      setInterval(async () => {
-        const resp = await fetch("https://dstat-api-blog.lem0n.cc/stats");
-        const data = await resp.json();
-        const series = chart.series[0];
-        series.addPoint(
-          [new Date().getTime(), data.connections],
-          true,
-          series.data.length > 10
-        );
+      setInterval(() => {
+        setTimeout(async () => {
+          const resp = await fetch("https://dstat-api-blog.lem0n.cc/stats");
+          const data = await resp.json();
+          const series = chart.series[0];
+          series.addPoint(
+            [new Date().getTime(), data.connections],
+            true,
+            series.data.length > 10
+          );
+        }, 200);
       }, 1000);
     </script>
   </body>
