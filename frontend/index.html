@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dstat of blog.lem0n.cc</title>
+  </head>
+  <body>
+    <div id="container" style="width: 100%; height: 400px"></div>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/10.3.1/highcharts.min.js"
+      integrity="sha512-+MvkP0bwo68CHrmsb+MxwqD5+Ztk5FxRpktGFmVW7UtzbFgV+1qQPDJs4uugeUWgCj8YlbsODKeiIGpqpga8Ug=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+      const options = {
+        title: {
+          text: "DSTAT Graph of blog.lem0n.cc",
+        },
+        xAxis: {
+          type: "datetime",
+          labels: {
+            format: '{value:%H:%M:%S}'
+          }
+        },
+        yAxis: {
+          title: {
+            text: "Requests/sec",
+          },
+        },
+        series: [
+          {
+            type: "area",
+            name: "Requests",
+            data: [],
+          },
+        ],
+      };
+
+      const chart = Highcharts.chart("container", options);
+
+      setInterval(async () => {
+        const resp = await fetch("https://dstat-api-blog.lem0n.cc/stats");
+        const data = await resp.json();
+        const series = chart.series[0];
+        series.addPoint(
+          [new Date().getTime(), data.connections],
+          true,
+          series.data.length > 10
+        );
+      }, 1000);
+    </script>
+  </body>
+</html>
